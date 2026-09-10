@@ -28,6 +28,8 @@ These resolve unspecified details and may be adjusted without changing the produ
 
 Provisional OS floors: Android 13 and iOS 16, subject to the pinned SDK/plugin compatibility audit in milestone M0. A newer OS floor must still support iPhone 13 and Galaxy S24+ and be recorded before implementation. Hardware age alone is not a reason to drop iPhone 13.
 
+Development uses the iOS Simulator as the primary debugging environment and Android emulators for platform coverage through M4. The user will connect physical phones for final M5 qualification. Hardware-only checks are deferred without blocking implementation; adapter choices remain provisional where simulation cannot establish their behavior. See [the environment policy](IMPLEMENTATION.md#development-environment-policy).
+
 ### Outside the first release
 
 Cloud OCR/TTS, translation, summaries, conversational book Q&A, runtime LLMs, complete audiobook export, cross-device sync, handwriting recognition, mathematical equation narration, table interpretation, and guaranteed interpretation of arbitrary scholarly layouts. Endnotes are read where they occur; only page footnotes are relocated into page-footnote groups. No EPUB or camera-scanning workflow yet.
@@ -101,7 +103,7 @@ Suggested layout: `lib/domain/`, `lib/application/`, `lib/infrastructure/`, and 
 
 ### Technology choices and gates
 
-| Area | Baseline candidate | Gate before commitment |
+| Area | Baseline candidate | Validation required (hardware portions deferred to M5) |
 | --- | --- | --- |
 | PDF display/render/extraction | `pdfrx` | Confirm usable text geometry, coordinate transforms, scan rendering, and available font/structure metadata |
 | OCR | ML Kit Text Recognition v2, bundled Latin model, thin Flutter/native adapter | Corpus quality on both devices, Turkish glyphs, rotated pages, plugin/SDK footprint |
@@ -224,7 +226,7 @@ Commit pages atomically; recover interrupted jobs from the last committed checkp
 - Parse PDFs as untrusted input: bounded rendering dimensions, resource limits, cancellation, updated dependencies, and actionable failures. Book text is never executable instructions.
 - Check space before import and throughout preparation. Temporary OCR images are disposable; original and prepared files are not OS-evictable cache. Clear temp files after successful checkpoints and on recovery.
 - Confirm book deletion with its storage impact; delete that book's original, revisions, index entries, bookmarks, and position while retaining shared resources. No bulk deletion implicit in resource cleanup.
-- No per-minute API costs. Native dependencies affect binary size; optional model delivery would add hosting/bandwidth and license obligations. Real-device testing and iOS signing remain development/release requirements.
+- No per-minute API costs. Native dependencies affect binary size; optional model delivery would add hosting/bandwidth and license obligations. Real-device testing and device/distribution signing are deferred to final hardware/release qualification; they are not prerequisites for simulator development.
 
 ## 9. AI pattern and tradeoffs
 
@@ -239,11 +241,11 @@ For development, use bounded specialist coding agents under one integrator after
 | Risk | Mitigation and release consequence |
 | --- | --- |
 | OCR/structure quality varies by scan | Frozen bilingual corpus, preserved source, review/corrections; do not silently lower quality targets |
-| Locked-screen speech stops at utterance boundaries | M0 physical-device soak test; fallback spike before broad UI implementation |
+| Locked-screen speech stops at utterance boundaries | M0 simulator/emulator investigation; M5 physical-device soaks; backend remains replaceable until hardware qualification |
 | Turkish voice quality differs by device | On-device voice preview and native-speaker listening rubric; downloadable alternatives only if needed |
 | Preparation consumes memory/heat/battery | Bounded page processing, persisted checkpoints, thermal pause, measured performance |
 | Printed labels or footnotes misclassified | Provenance, uncertainty state, targeted correction, source-coverage invariant |
 | System resource APIs differ | Ownership-aware UI, truthful availability, settings guidance rather than fake download controls |
 | Future SDK or OS changes | Pin tested dependencies, record device/OS matrix, rerun lifecycle smoke tests on upgrades |
 
-The numeric gates and failure scenarios in [ACCEPTANCE_AND_TESTS.md](ACCEPTANCE_AND_TESTS.md) govern release. M0 must record measured feasibility; none is claimed by this design document.
+The numeric gates and failure scenarios in [ACCEPTANCE_AND_TESTS.md](ACCEPTANCE_AND_TESTS.md) govern release. M0 records simulator/emulator evidence and deferred hardware checks; M5 establishes phone feasibility and performance. No validation result is claimed by this design document.

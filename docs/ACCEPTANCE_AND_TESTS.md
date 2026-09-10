@@ -2,6 +2,14 @@
 
 Status: specification only. No tests have been executed against an application. “Must” describes a release gate. Performance and quality thresholds are proposed engineering targets; any change needs a written rationale and product-owner agreement, not a quiet edit to obtain a pass.
 
+## Development versus final qualification
+
+Per the user's direction, develop and debug primarily in the iOS Simulator, with Android emulator coverage, until the app is ready for final phone testing. No physical phones are required to complete M0–M4. Execute automated and simulator/emulator-compatible cases throughout development; the matrix below describes final acceptance, not a demand to connect phones now.
+
+Record each result as `Passed`, `Failed`, `Not run`, or `Deferred — awaiting user devices`, with its actual environment and whether it used a real or fake adapter. Split mixed cases into assertions that can pass now and hardware assertions deferred to M5. A fake or simulator result does not close a physical-device assertion. Document unsupported simulator/native capabilities and continue other work.
+
+Defer actual offline voice availability/quality, sustained locked playback, phone-call/audio routing, Bluetooth/headphones, phone reboot/force-stop behavior, system voice installation, hardware accessibility, and release performance/thermal/battery qualification to the connected iPhone 13 and Galaxy S24+. Exercise their available simulated equivalents now. For offline development tests, disable/block test-environment network access and record the method; final phone tests use airplane mode and the required device checks.
+
 ## 1. Acceptance matrix
 
 | ID | Acceptance condition | Evidence |
@@ -125,7 +133,7 @@ Measure release builds on both baseline devices with device OS, battery/thermal 
 | ETA quality | On homogeneous 100+ page fixtures, after 20% completion, ≥ 80% of samples within ±30% of actual remaining time; mixed work displays uncertainty |
 | Resumability | Each completed page committed once; interrupted in-flight work may repeat; no loss of prior committed pages |
 
-Thermal throttling is reported, not hidden by removing slow trials. If nominal targets fail, profile and revise implementation; obtain explicit agreement before changing a product-impacting gate. Record storage per book, binary size, battery consumption per listening hour, and preparation energy as measurements in M0/M5; no unsupported numerical promises yet.
+Thermal throttling is reported, not hidden by removing slow trials. If nominal targets fail, profile and revise implementation; obtain explicit agreement before changing a product-impacting gate. Record available storage/build-size observations during M0; measure phone performance, battery consumption per listening hour, and preparation energy in M5. Simulator timing is diagnostic only; no unsupported numerical promises yet.
 
 ## 5. Test implementation strategy
 
@@ -133,6 +141,7 @@ Thermal throttling is reported, not hidden by removing slow trials. If nominal t
 - Repository tests with real temporary SQLite: transaction failure, migration rollback, progress persistence, corrections, revision activation, and deletion scope.
 - Corpus integration runner: compare produced regions/text/plans against independent ground truth and export per-language metrics plus failure examples. Keep holdout evaluation separate from rule tuning.
 - Focused widget tests: readiness/resource states, progress/ETA, default no-transcript view, navigation, accessible labels, and error recovery actions.
+- Simulator/emulator integration during M0–M4: real adapters where supported, end-to-end import/preparation/listening, restarts, source navigation, native setup, and available lifecycle/media events. Keep a repeatable launch/test recipe for each runtime and a hardware follow-up list.
 - Native adapter integration and physical-device tests: offline voice discovery, actual pronunciation, background handoff, lock/headset controls, interruptions, file providers, and lifecycle events.
 - Fakes model callbacks, network/resource failure, and disk faults; never count fake TTS as proof of offline synthesis or background playback.
 
@@ -142,4 +151,4 @@ Once implemented, the normal code gate is formatter check, `flutter analyze`, an
 
 All AC rows need pass/fail evidence and their test IDs. Required deliverables: locked dependency versions and licenses; device/OS matrix; frozen corpus manifest and per-language holdout report; EN/TR listening rubric; four 60-minute locked/offline soak reports; memory/timing results; migration/recovery results; and privacy/backup checks. Evidence must identify commit/build and fixture hashes without containing private book text.
 
-Do not label unexecuted device tests “passed,” substitute simulators for the baseline devices, or ship with unexplained corpus failures. M0 can pass feasibility on shorter samples; final AC-13 requires the full soak matrix.
+Do not label unexecuted device tests “passed,” substitute simulator evidence for final hardware qualification, or ship with unexplained corpus failures. M0–M4 may complete using simulator/emulator evidence with hardware checks explicitly deferred. Final AC-13 requires the full physical-device soak matrix in M5 once the user connects the phones.
